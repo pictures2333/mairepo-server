@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from src.database.database import init_db, close_db
+from src.utils.drive import close_drive, init_drive
 
 # Lifespan
 
@@ -11,13 +12,14 @@ from src.database.database import init_db, close_db
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     # startup
     await init_db()
-    ...
-
     try:
-        yield
+        await init_drive()
+        try:
+            yield
+        finally:
+            # shutdown
+            await close_drive()
     finally:
-        # shutdown
-        ...
         await close_db()
 
 

@@ -21,7 +21,8 @@ htmlcov/
 
 # Local development files
 test.py
-database.py.example
+test2.py
+example_storage/
 
 # Editors and operating systems
 .idea/
