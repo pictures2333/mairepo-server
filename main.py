@@ -7,6 +7,8 @@ from fastapi import FastAPI
 from src.database.database import init_db, close_db
 from src.utils.drive import close_drive, init_drive
 from src.core.scheduler import run_sync_scheduler
+from src.router import blob_router, chart_router
+from src import schema
 
 # Lifespan
 
@@ -40,10 +42,11 @@ app = FastAPI(lifespan=lifespan)
 
 # Routers
 
-#app.include_router(auth_router)
+app.include_router(chart_router)
+app.include_router(blob_router)
 
 # Routes
 
 @app.get("/")
-async def index() -> dict[str, str]:
-    return {"message": "Shirakami Fubuki is the cutest fox!"}
+async def index() -> schema.Message:
+    return schema.Message(message="Shirakami Fubuki is the cutest fox!")
