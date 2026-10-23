@@ -6,7 +6,7 @@ from fastapi import FastAPI
 
 from src.database.database import init_db, close_db
 from src.utils.drive import close_drive, init_drive
-from src.utils.scheduler import run_sync_scheduler
+from src.core.scheduler import run_sync_scheduler
 
 # Lifespan
 

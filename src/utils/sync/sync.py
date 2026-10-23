@@ -9,7 +9,7 @@ import re
 from src.settings import settings
 from src.utils.filename import random_filename
 from src.utils import drive
-from src.utils import log
+from src.core import log
 from src.database import database, model
 from src import crud
 from .sem import apply_sem
