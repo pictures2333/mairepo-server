@@ -257,6 +257,8 @@ async def sync_work() -> None:
         )
     )
 
+    logger.info("Sync completed.")
+    
     return
 
 
