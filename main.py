@@ -1,10 +1,12 @@
+import asyncio
 from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 
 from fastapi import FastAPI
 
 from src.database.database import init_db, close_db
 from src.utils.drive import close_drive, init_drive
+from src.utils.scheduler import run_sync_scheduler
 
 # Lifespan
 
@@ -16,7 +18,16 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
         try:
             await init_drive()
 
-            yield
+            sync_scheduler_task = asyncio.create_task(
+                run_sync_scheduler(),
+                name="mairepo-sync-scheduler"
+            )
+            try:
+                yield
+            finally:
+                sync_scheduler_task.cancel()
+                with suppress(asyncio.CancelledError):
+                    await sync_scheduler_task
         finally:
             await close_drive()
     finally:

@@ -16,14 +16,14 @@ class Settings(BaseSettings):
     # Maisquared
     MAISQUARED_FOLDER_ID:str = Field(min_length=1)
     GOOGLE_SERVICE_ACCOUNT_CRED_FILE:str = Field(min_length=1)
-    SYNC_INTERVAL:int = Field(ge=1, default=172800)
     SYNC_CONCURRENCY:int = Field(ge=1, default=8)
+    RUN_SYNC_INTERVAL:int = Field(ge=1, default=3600) # in seconds
 
     # Storage
     DIRECTORY:str = Field(min_length=1)
-    KEEP:int = Field(ge=1, default=3)
-    MAX_KEEP:int = Field(ge=1, default=7)
-    # todo: GC_RUN_INTERVAL
+    GC_KEEP:int = Field(ge=1, default=3)
+    GC_MAX_KEEP:int = Field(ge=1, default=7)
+    GC_RUN_INTERVAL:int = Field(ge=1, default=43200) # in seconds
 
     # Security
     TOKEN:str = Field(min_length=0, default="")
@@ -33,7 +33,7 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_keep_and_max_keep(self) -> Self:
-        if self.MAX_KEEP < self.KEEP:
+        if self.GC_MAX_KEEP < self.GC_KEEP:
             raise ValueError("MAX_KEEP should be greater than or equal to KEEP")
 
         return self
