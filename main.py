@@ -11,13 +11,13 @@ from src.utils.drive import close_drive, init_drive
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     # startup
-    await init_db()
     try:
-        await init_drive()
+        await init_db()
         try:
+            await init_drive()
+
             yield
         finally:
-            # shutdown
             await close_drive()
     finally:
         await close_db()

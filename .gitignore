@@ -18,11 +18,13 @@ htmlcov/
 .env
 .env.*
 !.env.example
+mairepo-*.json
 
 # Local development files
 test.py
 test2.py
 example_storage/
+src_old/
 
 # Editors and operating systems
 .idea/
