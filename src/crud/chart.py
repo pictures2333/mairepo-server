@@ -1,16 +1,38 @@
 from typing import List, Optional, Dict
 
-from sqlalchemy import select, delete
+from sqlalchemy import and_, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import aliased, contains_eager, joinedload
 
 from src.database import model
+from src.settings import settings
 
 
 async def read_charts(
     session:AsyncSession,
+    do_joined_load:bool=False,
+    limit_to_gc_keep:Optional[bool]=None,
     id:Optional[int]=None,
     name:Optional[str]=None
 ) -> List[model.Chart]:
+    """
+    Read charts with optional eager loading of files and blobs.
+
+    Args:
+        session: Database session used for the query.
+        do_joined_load: Whether to eagerly load files and blobs.
+        limit_to_gc_keep: When True, load only the latest GC_KEEP blobs for each
+            file. When False, load all blobs. Must be a bool when eager loading
+            is enabled.
+        id: Optional chart ID filter.
+        name: Optional chart name filter.
+
+    Returns:
+        List[model.Chart]: Matching charts.
+
+    Raises:
+        TypeError: If limit_to_gc_keep is not a bool when eager loading is enabled.
+    """
     stmt = select(model.Chart)
 
     if id is not None:
@@ -18,6 +40,59 @@ async def read_charts(
 
     if name is not None:
         stmt = stmt.where(model.Chart.name == name)
+
+    if do_joined_load:
+        if not isinstance(limit_to_gc_keep, bool):
+            raise TypeError(
+                "limit_to_gc_keep must be a bool when do_joined_load is enabled."
+            )
+
+        if limit_to_gc_keep:
+            ranked_blobs = (
+                select(
+                    model.Blob,
+                    func.row_number().over(
+                        partition_by=model.Blob.file_id,
+                        order_by=(
+                            model.Blob.created_at.desc(),
+                            model.Blob.id.desc()
+                        )
+                    ).label("blob_rank")
+                )
+                .subquery()
+            )
+            recent_blob = aliased(model.Blob, ranked_blobs)
+
+            stmt = (
+                stmt
+                .outerjoin(model.Chart.files)
+                .outerjoin(
+                    recent_blob,
+                    and_(
+                        recent_blob.file_id == model.File.id,
+                        ranked_blobs.c.blob_rank <= settings.GC_KEEP
+                    )
+                )
+                .options(
+                    contains_eager(model.Chart.files)
+                    .contains_eager(model.File.blobs.of_type(recent_blob))
+                )
+                .order_by(
+                    model.Chart.id,
+                    model.File.id,
+                    recent_blob.created_at.desc(),
+                    recent_blob.id.desc()
+                )
+            )
+        else:
+            stmt = stmt.options(
+                joinedload(model.Chart.files)
+                .joinedload(model.File.blobs)
+            )
+
+        stmt = stmt.execution_options(populate_existing=True)
+        result = await session.execute(stmt)
+        return list(result.unique().scalars())
 
     return list(await session.scalars(stmt))
 

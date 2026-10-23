@@ -195,7 +195,10 @@ async def sync_work() -> None:
     logger.info(f"Fetched {len(chart_files_by_name)} charts")
 
     async with database.with_session() as session:
-        database_charts = await crud.read_charts(session)
+        database_charts = await crud.read_charts(
+            session,
+            do_joined_load=False
+        )
 
     # compare drive and local
     drive_chart_names = chart_files_by_name.keys()
