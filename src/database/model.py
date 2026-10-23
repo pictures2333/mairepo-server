@@ -33,7 +33,18 @@ class Chart(Base):
 class File(Base):
     __tablename__ = "files"
     __table_args__ = (
-        UniqueConstraint("chart_id", "filename", name="uq_files_chart_id_filename"),
+        UniqueConstraint(
+            "chart_id",
+            "filename",
+            name="uq_files_chart_id_filename",
+            deferrable=True,
+            initially="DEFERRED"
+        ),
+        UniqueConstraint(
+            "chart_id",
+            "drive_file_id",
+            name="uq_files_chart_id_drive_file_id"
+        ),
     )
 
     id:Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -42,7 +53,7 @@ class File(Base):
     chart:Mapped["Chart"] = relationship(back_populates="files")
 
     filename:Mapped[str] = mapped_column(String, nullable=False)
-    drive_file_id:Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    drive_file_id:Mapped[str] = mapped_column(String, nullable=False)
     drive_head_revision_id:Mapped[str] = mapped_column(String, nullable=False)
     blobs:Mapped[List["Blob"]] = relationship(
         back_populates="file",

@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     DIRECTORY:str = Field(min_length=1)
     KEEP:int = Field(ge=1, default=3)
     MAX_KEEP:int = Field(ge=1, default=7)
+    # todo: GC_RUN_INTERVAL
 
     # Security
     TOKEN:str = Field(min_length=0, default="")
