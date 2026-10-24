@@ -3,6 +3,7 @@ import asyncio
 from src.settings import settings
 from src.utils.sync import sync
 from src.utils.gc import gc
+from src.utils.checker import check
 
 
 # Lock
@@ -34,4 +35,19 @@ async def run_gc_scheduler() -> None:
                 pass
 
         await asyncio.sleep(settings.RUN_GC_INTERVAL)
+
+
+async def run_check_scheduler() -> None:
+    while True:
+        async with scheduler_lock:
+            # Let startup observe that the checker owns the scheduler lock.
+            await asyncio.sleep(0)
+
+            try:
+                await check()
+            except Exception:
+                # check() already logs its failure.
+                pass
+
+        await asyncio.sleep(settings.RUN_CHECK_INTERVAL)
 

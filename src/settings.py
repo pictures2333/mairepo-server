@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     GC_KEEP:int = Field(ge=1, default=3)
     GC_MAX_KEEP:int = Field(ge=1, default=7)
     RUN_GC_INTERVAL:int = Field(ge=1, default=43200) # in seconds
+    RUN_CHECK_INTERVAL:int = Field(ge=1, default=86400) # in seconds
 
     # Security
     TOKEN:str = Field(min_length=0, default="")
