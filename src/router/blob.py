@@ -26,16 +26,17 @@ async def get_blob(
     _:bool = Depends(security.verify_security_token),
 ) -> FileResponse:
     # Resolve blob metadata
-    db_blob = await crud.read_blob(
+    db_blobs = await crud.read_blobs(
         session,
-        blob_id,
+        id=blob_id,
         limit_to_gc_keep=True
     )
-    if db_blob is None or db_blob.file is None:
+    if not db_blobs or db_blobs[0].file is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Blob not found."
         )
+    db_blob = db_blobs[0]
 
     # Validate storage path
     storage_directory = pathlib.Path(settings.DIRECTORY).resolve()

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,31 +8,33 @@ from src.database import model
 from src.settings import settings
 
 
-async def read_blob(
+async def read_blobs(
     session:AsyncSession,
-    blob_id:int,
+    id:Optional[int]=None,
     limit_to_gc_keep:bool=False
-) -> Optional[model.Blob]:
+) -> List[model.Blob]:
     """
-    Read a blob by ID with its file eagerly loaded.
+    Read blobs with their files eagerly loaded.
 
     Args:
         session: Database session used for the query.
-        blob_id: Blob ID to query.
+        id: Optional blob ID filter. When omitted, return all matching blobs.
         limit_to_gc_keep: Whether the blob must be attached to a file and
             among that file's latest GC_KEEP versions. Enabling this causes
             orphan blobs to be treated as not found because their retention
             rank cannot be verified.
 
     Returns:
-        Optional[model.Blob]: The matching blob, or None when it does not exist
-            or, while the limit is enabled, is orphaned or outside GC_KEEP.
+        List[model.Blob]: Matching blobs. When the limit is enabled, orphaned
+            blobs and blobs outside GC_KEEP are excluded.
     """
     stmt = (
         select(model.Blob)
-        .where(model.Blob.id == blob_id)
         .options(joinedload(model.Blob.file))
     )
+
+    if id is not None:
+        stmt = stmt.where(model.Blob.id == id)
 
     if limit_to_gc_keep:
         candidate_blob = aliased(model.Blob)
@@ -51,4 +53,4 @@ async def read_blob(
             model.Blob.id.in_(recent_blob_ids)
         )
 
-    return await session.scalar(stmt)
+    return list(await session.scalars(stmt))
