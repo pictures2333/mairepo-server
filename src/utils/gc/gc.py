@@ -39,7 +39,7 @@ async def gc_work() -> None:
                     delete_files.append(pathlib.Path(blob.path).absolute())
                     await crud.delete_blob(session, blob.id)
     except Exception as exc:
-        logger.exception(f"Failed to delete blobs in database : {str(exc)}")
+        logger.error(f"Failed to delete blobs in database : {str(exc)}")
     else:
         unlinked_count = 0
         skipped_count = 0
@@ -96,7 +96,7 @@ async def gc_work() -> None:
             f"(untracked)."
         )
     except Exception as exc:
-        logger.exception(f"Failed to unlink untracked files : {str(exc)}")
+        logger.error(f"Failed to unlink untracked files : {str(exc)}")
 
     logger.info("GC completed.")
 
@@ -107,5 +107,5 @@ async def gc() -> None:
     try:
         await gc_work()
     except Exception as exc:
-        logger.exception(f"GC failed : {str(exc)}")
+        logger.error(f"GC failed : {str(exc)}")
         raise

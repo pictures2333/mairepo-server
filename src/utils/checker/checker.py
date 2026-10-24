@@ -72,5 +72,5 @@ async def check() -> None:
     try:
         await check_work()
     except Exception as exc:
-        logger.exception(f"Integrity check failed : {str(exc)}")
+        logger.error(f"Integrity check failed : {str(exc)}")
         raise

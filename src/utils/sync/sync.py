@@ -271,7 +271,7 @@ async def sync() -> None:
     try:
         await sync_work()
     except Exception as exc:
-        logger.exception(f"Sync failed : {str(exc)}")
+        logger.error(f"Sync failed : {str(exc)}")
         raise
 
 
