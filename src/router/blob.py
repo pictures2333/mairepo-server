@@ -29,6 +29,7 @@ async def get_blob(
     db_blobs = await crud.read_blobs(
         session,
         id=blob_id,
+        file_id=crud.UNSET,
         limit_to_gc_keep=True
     )
     if not db_blobs or db_blobs[0].file is None:
