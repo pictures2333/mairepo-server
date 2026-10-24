@@ -1,0 +1,44 @@
+services:
+  mairepo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mairepo:local
+    restart: unless-stopped
+    init: true
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    volumes:
+      - mairepo_storage:/var/lib/mairepo/storage
+    secrets:
+      - google_service_account
+    tmpfs:
+      - /tmp
+
+  db:
+    image: docker.io/library/postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mairepo
+      POSTGRES_USER: mairepo
+      POSTGRES_PASSWORD: change_me
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mairepo_storage:
+  postgres_data:
+
+secrets:
+  google_service_account:
+    file: ./mairepo-service-account.json

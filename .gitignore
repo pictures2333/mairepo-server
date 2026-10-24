@@ -23,6 +23,7 @@ mairepo-*.json
 # Local development files
 test.py
 test2.py
+work.md
 example_storage/
 src_old/
 
