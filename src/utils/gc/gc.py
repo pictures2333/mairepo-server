@@ -2,10 +2,10 @@ from typing import List
 import os
 import pathlib
 
-from src.settings import settings
 from src.core import log
 from src.database import database
 from src import crud
+from src.utils.storage import resolve_storage_directory, resolve_storage_file
 
 logger = log.get_logger("mairepo.gc")
 
@@ -14,7 +14,7 @@ logger = log.get_logger("mairepo.gc")
 async def gc_work() -> None:
     logger.info("GC started.")
 
-    storage_directory = pathlib.Path(settings.DIRECTORY).absolute()
+    storage_directory = resolve_storage_directory()
 
     # Remove orphan blobs and blobs beyond GC_MAX_KEEP
     delete_files:List[pathlib.Path] = []
@@ -45,8 +45,8 @@ async def gc_work() -> None:
         skipped_count = 0
 
         for df in delete_files:
-            if not df.is_relative_to(storage_directory):
-                logger.warning(f"File is outside the storage directory, skipped: {df}")
+            if resolve_storage_file(df) is None:
+                logger.warning(f"File is unavailable or outside storage, skipped: {df}")
                 skipped_count += 1
                 continue
 

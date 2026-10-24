@@ -1,9 +1,7 @@
 from typing import List, Optional
-import pathlib
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi.responses import FileResponse
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
 from src.core import security
 from src.core import log

@@ -1,5 +1,3 @@
-import pathlib
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src import crud
 from src.core import log, security
 from src.database import database
-from src.settings import settings
+from src.utils.storage import resolve_storage_file
 
 logger = log.get_logger("mairepo.router.blob")
 
@@ -40,27 +38,17 @@ async def get_blob(
     db_blob = db_blobs[0]
 
     # Validate storage path
-    storage_directory = pathlib.Path(settings.DIRECTORY).resolve()
     try:
-        blob_path = pathlib.Path(db_blob.path).resolve(strict=True)
-    except OSError as exc:
-        logger.error(
-            f"Blob {db_blob.id} points to an unavailable file: {str(exc)}"
-        )
+        blob_path = resolve_storage_file(db_blob.path)
+    except RuntimeError as exc:
+        logger.error(f"Storage directory is unavailable: {str(exc)}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Blob file is temporarily unavailable."
+            detail="Storage is temporarily unavailable."
         ) from exc
 
-    if not blob_path.is_relative_to(storage_directory):
-        logger.error(f"Blob {db_blob.id} points outside the storage directory")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Blob file is temporarily unavailable."
-        )
-
-    if not blob_path.is_file():
-        logger.error(f"Blob {db_blob.id} does not point to a regular file")
+    if blob_path is None:
+        logger.error(f"Blob {db_blob.id} points to an unavailable storage file")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Blob file is temporarily unavailable."

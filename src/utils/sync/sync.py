@@ -8,6 +8,7 @@ import re
 
 from src.settings import settings
 from src.utils.filename import random_filename
+from src.utils.storage import resolve_storage_directory
 from src.utils import drive
 from src.core import log
 from src.database import database, model
@@ -190,6 +191,7 @@ async def _compare_exist_chart_file(chart_id:int, chart_name:str, chart_files:Li
 
 async def sync_work() -> None:
     logger.info("Sync started.")
+    resolve_storage_directory()
 
     chart_files_by_name = await _drive_get_chart_file_list()
     logger.info(f"Fetched {len(chart_files_by_name)} charts")
@@ -280,8 +282,8 @@ async def _download_and_verify_chart_file(
     drive_file:drive.DriveFileInfo
 ) -> Tuple[pathlib.Path, str]:
     destination_path = (
-        pathlib.Path(settings.DIRECTORY) / random_filename()
-    ).absolute()
+        resolve_storage_directory() / random_filename()
+    )
     downloaded_file = await drive.download_file(
         drive_file.id,
         destination_path,

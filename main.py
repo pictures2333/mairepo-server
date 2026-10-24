@@ -6,6 +6,7 @@ from fastapi import FastAPI
 
 from src.database.database import init_db, close_db
 from src.utils.drive import close_drive, init_drive
+from src.utils.storage import resolve_storage_directory
 from src.core.scheduler import (
     run_check_scheduler,
     run_gc_scheduler,
@@ -20,6 +21,8 @@ from src import schema
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     # startup
+    resolve_storage_directory()
+
     try:
         await init_db()
         try:
