@@ -46,7 +46,7 @@ Copy `.env.example` to `.env` and update the required values.
 | `GC_MAX_KEEP` | No | `7` | Number of newest blobs per file retained before garbage collection. Must be greater than or equal to `GC_KEEP`. |
 | `RUN_GC_INTERVAL` | No | `43200` | Delay in seconds between garbage-collection runs. |
 | `RUN_CHECK_INTERVAL` | No | `86400` | Delay in seconds between storage integrity checks. |
-| `TOKEN` | No | Empty | Expected value of the `MAIREPO_TOKEN` request header. An empty value disables API authentication. |
+| `TOKEN` | No | Empty | Expected value of the `MAIREPO-TOKEN` request header. An empty value disables API authentication. |
 | `MAX_ATTEMPTS` | No | `3` | Maximum number of attempts for retryable Google Drive operations. |
 
 ## API
@@ -55,7 +55,7 @@ Copy `.env.example` to `.env` and update the required values.
 - `GET /chart/{chart_id}` returns a specific chart using the same schema.
 - `GET /blob/{blob_id}` downloads a retained blob.
 
-When `TOKEN` is configured, send it in the `MAIREPO_TOKEN` request header.
+When `TOKEN` is configured, send it in the `MAIREPO-TOKEN` request header.
 
 The chart index orders blobs from newest to oldest. A client should try the newest blob first and fall back to an older returned blob if the download is temporarily unavailable.
 
