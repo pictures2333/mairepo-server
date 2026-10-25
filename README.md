@@ -4,6 +4,8 @@ mairepo is a chart repository server.
 
 It downloads charts from Google Drive and provides an HTTP API for clients to browse and download them.
 
+Client: [mairepo-client](https://github.com/pictures2333/mairepo-client)
+
 ## Google Drive layout
 
 `MAISQUARED_FOLDER_ID` must identify the root folder of the following three-level layout:
